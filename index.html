@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mental Health Support Chatbot</title>
+  <style>
+   html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #000000; /* pure black background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* prevent body scroll */
+  color: #f0f0f0; /* light text by default */
+}
+
+body > .container {
+  background: #121212; /* very dark gray container */
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(255,255,255,0.1);
+  
+  width: 95vw;
+  height: 95vh;
+
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  color: #f0f0f0; /* light text inside */
+}
+
+h2 {
+  color: #00aaff; /* bright cyan for heading */
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 3rem;
+  user-select: none;
+}
+
+.chatbox {
+  flex: 1;
+  border: 1.5px solid #333; /* darker border */
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: #222; /* dark chatbox background */
+  font-size: 1.2rem;
+  line-height: 1.5;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  color: #e0e0e0; /* light text */
+}
+
+.chatbox div {
+  margin: 10px 0;
+}
+
+.input-section {
+  display: flex;
+  gap: 15px;
+}
+
+.input-section input {
+  flex: 1;
+  padding: 15px 20px;
+  border-radius: 15px;
+  border: 1.5px solid #444;
+  background: #121212;
+  color: #f0f0f0;
+  font-size: 1.3rem;
+}
+
+.input-section input::placeholder {
+  color: #888;
+}
+
+.input-section button {
+  padding: 15px 30px;
+  border-radius: 15px;
+  background: #00aaff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+.input-section button:hover {
+  background: #0088cc;
+}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Andhamaina Jeevitham 💙</h2>
+
+    <label for="userRole">Select your role:</label>
+    <select id="userRole">
+      <option value="student">Student</option>
+      <option value="farmer">Farmer</option>
+      <option value="doctor">Doctor</option>
+      <option value="other">Other</option>
+    </select>
+
+    <div class="chatbox" id="chatMessages"></div>
+
+    <div class="input-section">
+      <input type="text" id="chatInput" placeholder="Type your message..." />
+      <button onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendChat() {
+      const input = document.getElementById('chatInput');
+      const message = input.value.trim();
+      const chatMessages = document.getElementById('chatMessages');
+      const role = document.getElementById('userRole').value;
+
+      if (!message) return;
+
+      // Show user message
+      const userMsg = document.createElement('div');
+      userMsg.innerHTML = `<strong>You:</strong> ${message}`;
+      chatMessages.appendChild(userMsg);
+
+      input.value = '';
+
+      // Show typing placeholder
+      const botMsg = document.createElement('div');
+      botMsg.innerHTML = `<em>Typing...</em>`;
+      chatMessages.appendChild(botMsg);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message, role }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('Backend error:', data);
+          botMsg.innerHTML = `<strong>Support Bot:</strong> Server error: ${data.error}`;
+        } else {
+          botMsg.innerHTML = `<strong>Support Bot:</strong> ${data.reply ?? 'No reply from server'}`;
+        }
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+      } catch (error) {
+        console.error('Fetch failed:', error);
+        botMsg.innerHTML = `<strong>Support Bot:</strong> Sorry, something went wrong.`;
+      }
+    }
+  </script>
+</body>
+</html>
